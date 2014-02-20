@@ -6,6 +6,9 @@ public class PlayerControl : MonoBehaviour {
 	// label for debugging
 	public GUIText label; 
 
+	// Jump Button
+	public GUITexture jumpButton;
+
 	// store input
 	private SimpleTouch[] touch;
 
@@ -46,35 +49,39 @@ public class PlayerControl : MonoBehaviour {
 			foreach (SimpleTouch t in touch) {
 
 				// JUMP
-				switch (t.touchPhase){
-					case TouchPhase.Began:
-						if (grounded || numAirJumps < maxAirJumps) {
-							SetVelY(jumpVel);
-							
-							if (!grounded) {
-								numAirJumps++;
+				if (!jumped && jumpButton != null && jumpButton.HitTest(t.position)) {
+					jumped = true;
+
+					switch (t.touchPhase){
+						case TouchPhase.Began:
+							if (grounded || numAirJumps < maxAirJumps) {
+								SetVelY(jumpVel);
+								
+								if (!grounded) {
+									numAirJumps++;
+								}
 							}
-						}
-						break;
+							break;
 
 
-					case TouchPhase.Stationary:
-					case TouchPhase.Moved:
-						if (canGlide && this.rigidbody.velocity.y <= glideVel) {
-							SetVelY(glideVel);
-						}
-						break;
+						case TouchPhase.Stationary:
+						case TouchPhase.Moved:
+							if (canGlide && this.rigidbody.velocity.y <= glideVel) {
+								SetVelY(glideVel);
+							}
+							break;
 
 
-					case TouchPhase.Ended:
-						if (this.rigidbody.velocity.y > 0) {
-							SetVelY(this.rigidbody.velocity.y * 0.2f);
-						}
-						break;
+						case TouchPhase.Ended:
+							if (this.rigidbody.velocity.y > 0) {
+								SetVelY(this.rigidbody.velocity.y * 0.2f);
+							}
+							break;
 
 
-					default:				
-						break;
+						default:				
+							break;
+					}				
 				}
 			}
 		}
@@ -128,7 +135,7 @@ public class PlayerControl : MonoBehaviour {
 				Touch t = Input.GetTouch (i);
 				touches[i] = new SimpleTouch
 				{
-					position = new Vector2(t.position.x, t.position.y),
+					position = new Vector3(t.position.x, t.position.y, 0),
 					touchPhase = t.phase
 				};
 			}
@@ -156,7 +163,7 @@ public class PlayerControl : MonoBehaviour {
 				touches = new SimpleTouch[1];
 				touches[0] = new SimpleTouch 
 				{
-					position = new Vector2(Input.mousePosition.x, Input.mousePosition.x),
+					position = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0),
 					touchPhase = phase
 				};
 			}		
@@ -168,5 +175,5 @@ public class PlayerControl : MonoBehaviour {
 
 public class SimpleTouch {
 	public TouchPhase touchPhase;
-	public Vector2 position;
+	public Vector3 position;
 }
