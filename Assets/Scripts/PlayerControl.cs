@@ -7,7 +7,7 @@ public class PlayerControl : MonoBehaviour {
 	public GUIText label; 
 
 	// store input
-	private SimpleTouch touch;
+	private SimpleTouch[] touch;
 
 	// check for grounded
 	private bool grounded = false;
@@ -19,6 +19,8 @@ public class PlayerControl : MonoBehaviour {
 	public int maxAirJumps = 1;
 	private int numAirJumps = 0;
 
+	// Ground layer
+	int groundLayer = 8;
 
 	// Use this for initialization
 	void Start () {
@@ -28,44 +30,53 @@ public class PlayerControl : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		touch = GetTouchInput ();
+
+		// check if grounded
 		grounded = GetGroundedState();
 		label.text = grounded.ToString();
-
 		if (grounded) {
 			numAirJumps = 0;
 		}
 
-		// JUMP
-		switch (touch.touchPhase){
-			case TouchPhase.Began:
-				if (grounded || numAirJumps < maxAirJumps) {
-					SetVelY(jumpVel);
-					
-					if (!grounded) {
-						numAirJumps++;
-					}
+		// check for input
+		bool jumped = false;
+		touch = GetTouchInput ();
+
+		if (touch != null) {
+			foreach (SimpleTouch t in touch) {
+
+				// JUMP
+				switch (t.touchPhase){
+					case TouchPhase.Began:
+						if (grounded || numAirJumps < maxAirJumps) {
+							SetVelY(jumpVel);
+							
+							if (!grounded) {
+								numAirJumps++;
+							}
+						}
+						break;
+
+
+					case TouchPhase.Stationary:
+					case TouchPhase.Moved:
+						if (canGlide && this.rigidbody.velocity.y <= glideVel) {
+							SetVelY(glideVel);
+						}
+						break;
+
+
+					case TouchPhase.Ended:
+						if (this.rigidbody.velocity.y > 0) {
+							SetVelY(this.rigidbody.velocity.y * 0.2f);
+						}
+						break;
+
+
+					default:				
+						break;
 				}
-				break;
-
-
-			case TouchPhase.Stationary:
-			case TouchPhase.Moved:
-				if (canGlide && this.rigidbody.velocity.y <= glideVel) {
-					SetVelY(glideVel);
-				}
-				break;
-
-
-			case TouchPhase.Ended:
-				if (this.rigidbody.velocity.y > 0) {
-					SetVelY(this.rigidbody.velocity.y * 0.2f);
-				}
-				break;
-
-
-			default:				
-				break;
+			}
 		}
 	}
 
@@ -77,12 +88,12 @@ public class PlayerControl : MonoBehaviour {
 		float leftX = pos.x - this.rigidbody.collider.bounds.size.x / 2;
 		float rightX = pos.x + this.rigidbody.collider.bounds.size.x / 2;
 
-		RaycastHit hit;
+		RaycastHit hit;	
 
 		// test left, right and center of collider
-		if (Physics.Raycast(new Vector3(leftX,pos.y, pos.z), -Vector3.up, out hit, height/2) ||
-		    Physics.Raycast(new Vector3(pos.x,pos.y, pos.z), -Vector3.up, out hit, height/2) ||
-		    Physics.Raycast(new Vector3(rightX,pos.y, pos.z), -Vector3.up, out hit, height/2))
+		if (Physics.Raycast(new Vector3(leftX, pos.y, pos.z), -Vector3.up, out hit, height/2, 1 << groundLayer) ||
+		    Physics.Raycast(new Vector3(pos.x, pos.y, pos.z), -Vector3.up, out hit, height/2, 1 << groundLayer) ||
+		    Physics.Raycast(new Vector3(rightX, pos.y, pos.z), -Vector3.up, out hit, height/2, 1 << groundLayer))
 		{
 			grounded = true;
 		}
@@ -90,6 +101,8 @@ public class PlayerControl : MonoBehaviour {
 		return grounded;
 	}
 
+
+	// Functions for setting individual components of player velocity
 	void SetVelX(float velX) {
 		this.rigidbody.velocity = new Vector3(velX, this.rigidbody.velocity.y, this.rigidbody.velocity.z);
 	}
@@ -100,53 +113,56 @@ public class PlayerControl : MonoBehaviour {
 		this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, this.rigidbody.velocity.y, velZ);
 	}
 
+
 	// Return touch input if touchscreen or convert mouse input to touch input
-	SimpleTouch GetTouchInput()
+	SimpleTouch[] GetTouchInput()
 	{
-		bool touched = false;
-		float tx = 0;
-		float ty = 0;
-		TouchPhase phase = TouchPhase.Canceled;
+		SimpleTouch[] touches = null;
 
 		// Check for touch input...
 		if (Input.touchCount > 0) {
-			Touch t = Input.GetTouch(0);
-			
-			tx = t.position.x;
-			ty = t.position.y;
-			phase = t.phase;
-			touched = true;
+			touches = new SimpleTouch[Input.touchCount];
+
+			for (int i = 0; i < Input.touchCount; i++)
+			{
+				Touch t = Input.GetTouch (i);
+				touches[i] = new SimpleTouch
+				{
+					position = new Vector2(t.position.x, t.position.y),
+					touchPhase = t.phase
+				};
+			}
+
 
 		// If no touch input check for mouse input
-		} else if (Input.GetMouseButtonDown(0)) {
-			tx = Input.mousePosition.x;
-			ty = Input.mousePosition.y;
-			phase = TouchPhase.Began;
-			touched = true;
+		} else {
+			bool touched = false;
+			TouchPhase phase = TouchPhase.Canceled;
 
-		} else if (Input.GetMouseButton(0)) {
-			tx = Input.mousePosition.x;
-			ty = Input.mousePosition.y;
-			phase = TouchPhase.Stationary;
-			touched = true;
+			if (Input.GetMouseButtonDown(0)) {
+				phase = TouchPhase.Began;
+				touched = true;
 
-		} else if (Input.GetMouseButtonUp(0)) {
-			tx = Input.mousePosition.x;
-			ty = Input.mousePosition.y;
-			phase = TouchPhase.Ended;
-			touched = true;
-		}
+			} else if (Input.GetMouseButton(0)) {
+				phase = TouchPhase.Stationary;
+				touched = true;
 
-		if (touched) {
-			if (label != null) {
-				label.text = phase.ToString() + ": " + tx + ", " + ty;
+			} else if (Input.GetMouseButtonUp(0)) {
+				phase = TouchPhase.Ended;
+				touched = true;
 			}
+
+			if (touched) {
+				touches = new SimpleTouch[1];
+				touches[0] = new SimpleTouch 
+				{
+					position = new Vector2(Input.mousePosition.x, Input.mousePosition.x),
+					touchPhase = phase
+				};
+			}		
 		}
 
-		return new SimpleTouch {
-			touchPhase = phase,
-			position = new Vector2(tx, ty)
-		};
+		return touches;
 	}
 }
 
