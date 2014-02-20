@@ -3,6 +3,8 @@ using System.Collections;
 
 public class PlayerControl : MonoBehaviour {
 
+	public Camera mainCamera;
+
 	// label for debugging
 	public GUIText label; 
 
@@ -23,7 +25,10 @@ public class PlayerControl : MonoBehaviour {
 	private int numAirJumps = 0;
 
 	// Ground layer
-	int groundLayer = 8;
+	private int groundLayer = 8;
+
+	// TEST hand 
+	public GameObject hand;
 
 	// Use this for initialization
 	void Start () {
@@ -43,45 +48,60 @@ public class PlayerControl : MonoBehaviour {
 
 		// check for input
 		bool jumped = false;
+		bool aimed = false;
 		touch = GetTouchInput ();
 
 		if (touch != null) {
 			foreach (SimpleTouch t in touch) {
 
-				// JUMP
-				if (!jumped && jumpButton != null && jumpButton.HitTest(t.position)) {
-					jumped = true;
+				// If touch was on jump button...
+				if (jumpButton != null && jumpButton.HitTest(t.position)) {
 
-					switch (t.touchPhase){
-						case TouchPhase.Began:
-							if (grounded || numAirJumps < maxAirJumps) {
-								SetVelY(jumpVel);
-								
-								if (!grounded) {
-									numAirJumps++;
+					// Jump logic.
+					if (!jumped) {
+						jumped = true;
+
+						switch (t.touchPhase){
+							case TouchPhase.Began:
+								if (grounded || numAirJumps < maxAirJumps) {
+									SetVelY(jumpVel);
+									
+									if (!grounded) {
+										numAirJumps++;
+									}
 								}
-							}
-							break;
+								break;
 
 
-						case TouchPhase.Stationary:
-						case TouchPhase.Moved:
-							if (canGlide && this.rigidbody.velocity.y <= glideVel) {
-								SetVelY(glideVel);
-							}
-							break;
+							case TouchPhase.Stationary:
+							case TouchPhase.Moved:
+								if (canGlide && this.rigidbody.velocity.y <= glideVel) {
+									SetVelY(glideVel);
+								}
+								break;
 
 
-						case TouchPhase.Ended:
-							if (this.rigidbody.velocity.y > 0) {
-								SetVelY(this.rigidbody.velocity.y * 0.2f);
-							}
-							break;
+							case TouchPhase.Ended:
+								if (this.rigidbody.velocity.y > 0) {
+									SetVelY(this.rigidbody.velocity.y * 0.2f);
+								}
+								break;
 
 
-						default:				
-							break;
-					}				
+							default:				
+								break;
+						}			
+					}
+
+				// Not the jump button, so shoot
+				} else {
+					if (hand != null && mainCamera != null && !aimed) {
+						aimed = true;
+						Vector3 handPos = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, mainCamera.transform.position.z * -1));
+
+						handPos.Set(handPos.x, handPos.y, hand.transform.position.z);
+						hand.transform.position = handPos;
+					}
 				}
 			}
 		}
