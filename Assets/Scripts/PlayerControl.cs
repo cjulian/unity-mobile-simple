@@ -27,12 +27,18 @@ public class PlayerControl : MonoBehaviour {
 	// Ground layer
 	private int groundLayer = 8;
 
+	// WEAPONS
+	public GameObject weapon;
+	private Gun gun;
+
 	// TEST hand 
 	public GameObject hand;
 
 	// Use this for initialization
 	void Start () {
-		
+		if (weapon != null) {
+			gun = weapon.GetComponent<Gun>();
+		}
 	}
 
 
@@ -96,11 +102,15 @@ public class PlayerControl : MonoBehaviour {
 				// Not the jump button, so shoot
 				} else {
 					if (hand != null && mainCamera != null && !aimed) {
-						aimed = true;
-						Vector3 handPos = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, mainCamera.transform.position.z * -1));
+//						aimed = true;
+//						Vector3 handPos = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, mainCamera.transform.position.z * -1));
+//
+//						handPos.Set(handPos.x, handPos.y, hand.transform.position.z);
+//						hand.transform.position = handPos;
 
-						handPos.Set(handPos.x, handPos.y, hand.transform.position.z);
-						hand.transform.position = handPos;
+						if (weapon != null && gun != null) {
+							gun.Shoot(t);
+						}
 					}
 				}
 			}
