@@ -31,9 +31,6 @@ public class PlayerControl : MonoBehaviour {
 	public GameObject weapon;
 	private Gun gun;
 
-	// TEST hand 
-	public GameObject hand;
-
 	// Use this for initialization
 	void Start () {
 		if (weapon != null) {
@@ -54,7 +51,6 @@ public class PlayerControl : MonoBehaviour {
 
 		// check for input
 		bool jumped = false;
-		bool aimed = false;
 		touch = GetTouchInput ();
 
 		if (touch != null) {
@@ -101,16 +97,8 @@ public class PlayerControl : MonoBehaviour {
 
 				// Not the jump button, so shoot
 				} else {
-					if (hand != null && mainCamera != null && !aimed) {
-//						aimed = true;
-//						Vector3 handPos = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, mainCamera.transform.position.z * -1));
-//
-//						handPos.Set(handPos.x, handPos.y, hand.transform.position.z);
-//						hand.transform.position = handPos;
-
-						if (weapon != null && gun != null) {
-							gun.Shoot(t);
-						}
+					if (weapon != null && gun != null) {
+						gun.Shoot(t);
 					}
 				}
 			}
