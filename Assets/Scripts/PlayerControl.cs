@@ -29,12 +29,20 @@ public class PlayerControl : MonoBehaviour {
 
 	// WEAPONS
 	public GameObject weapon;
-	private Gun gun;
+	private Gun gun; // gun script
 
+	// ARM
+	public GameObject arm;
+	private Arm armScript; // arm script
+	
 	// Use this for initialization
 	void Start () {
 		if (weapon != null) {
 			gun = weapon.GetComponent<Gun>();
+		}
+
+		if (arm != null) {
+			armScript = arm.GetComponent<Arm>();
 		}
 	}
 
@@ -99,6 +107,10 @@ public class PlayerControl : MonoBehaviour {
 				} else {
 					if (weapon != null && gun != null) {
 						gun.Shoot(t);
+
+					}
+					if (arm != null && armScript != null) {
+						armScript.aim(t);
 					}
 				}
 			}

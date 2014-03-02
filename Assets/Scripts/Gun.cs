@@ -21,7 +21,6 @@ public class Gun : MonoBehaviour {
 	public float reloadDelay = 1.0f;
 	private bool reloadDelayOver = true;
 
-
 	private Vector3 targetPoint;
 	private Quaternion targetRotation;
 
@@ -49,8 +48,8 @@ public class Gun : MonoBehaviour {
 
 	public void Shoot(SimpleTouch t) {
 		if (mainCamera != null && t.touchPhase == TouchPhase.Began || t.touchPhase == TouchPhase.Moved || t.touchPhase == TouchPhase.Stationary) {
-			targetPoint = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, mainCamera.transform.position.z * -1.0f));
-			targetRotation = Quaternion.LookRotation(targetPoint - this.transform.position, Vector3.forward);
+			targetPoint = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, (mainCamera.transform.position.z * -1.0f) + this.transform.position.z));
+			targetRotation = Quaternion.LookRotation(targetPoint - this.transform.position, Vector3.back);
 
 			if (shotDelayOver && reloadDelayOver) {
 				bullets[bulletCacheIndex].SetActive(true);
