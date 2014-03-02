@@ -22,8 +22,6 @@ public class Gun : MonoBehaviour {
 	public float reloadDelay = 1.0f;
 	private bool reloadDelayOver = true;
 
-	private Vector3 targetPoint;
-	private Quaternion targetRotation;
 
 	// Use this for initialization
 	void Start () {
@@ -33,9 +31,38 @@ public class Gun : MonoBehaviour {
 			bullets[i] = GameObject.Instantiate(bulletPrefab) as GameObject;
 		}
 	}
-	
+
+
 	// Update is called once per frame
 	void Update () {
+		UpdateClipGUI();
+	}
+
+
+	// Shoot the gun's bullets at the targetPoint, rotating the bullets into the proper orientation.
+	// Manages firing rate and reload time and also tracks number of bullets remaining in clip.
+	public void Shoot(Vector3 targetPoint, Quaternion targetRotation) {
+		if (shotDelayOver && reloadDelayOver) {
+			bullets[bulletCacheIndex].SetActive(true);
+			bullets[bulletCacheIndex].transform.position = this.transform.position;
+			bullets[bulletCacheIndex].transform.rotation = targetRotation;
+			bullets[bulletCacheIndex].rigidbody.velocity = new Vector3(targetPoint.x - arm.transform.position.x, targetPoint.y - arm.transform.position.y, 0).normalized * bulletSpeed;
+			bulletCacheIndex = (bulletCacheIndex + 1) % bulletCacheSize;
+			shotDelayOver = false;
+			StartCoroutine(StartShotDelay());
+			
+			bulletClipIndex = (bulletClipIndex + 1);
+			if (bulletClipIndex == bulletClipSize) {
+				reloadDelayOver = false;
+				StartCoroutine(StartReloadDelay());
+			}
+			bulletClipIndex %= bulletClipSize;
+		}
+	}
+
+
+	// Update the GUI that displays remaining bullets in clip
+	private void UpdateClipGUI() {
 		if (clipGUI != null) {
 			int GUIBulletIndex = bulletClipSize - bulletClipIndex;
 			
@@ -47,36 +74,12 @@ public class Gun : MonoBehaviour {
 		}	
 	}
 
-	public void Shoot(SimpleTouch t) {
-		if (mainCamera != null && t.touchPhase == TouchPhase.Began || t.touchPhase == TouchPhase.Moved || t.touchPhase == TouchPhase.Stationary) {
-			targetPoint = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, (mainCamera.transform.position.z * -1.0f) + this.transform.position.z));
-			targetRotation = Quaternion.LookRotation(targetPoint - arm.transform.position, Vector3.back);
-			arm.transform.rotation = targetRotation;
-
-
-			if (shotDelayOver && reloadDelayOver) {
-				bullets[bulletCacheIndex].SetActive(true);
-				bullets[bulletCacheIndex].transform.position = this.transform.position;
-				bullets[bulletCacheIndex].transform.rotation = targetRotation;
-				bullets[bulletCacheIndex].rigidbody.velocity = new Vector3(targetPoint.x - arm.transform.position.x, targetPoint.y - arm.transform.position.y, 0).normalized * bulletSpeed;
-				bulletCacheIndex = (bulletCacheIndex + 1) % bulletCacheSize;
-				shotDelayOver = false;
-				StartCoroutine(StartShotDelay());
-
-				bulletClipIndex = (bulletClipIndex + 1);
-				if (bulletClipIndex == bulletClipSize) {
-					reloadDelayOver = false;
-					StartCoroutine(StartReloadDelay());
-				}
-				bulletClipIndex %= bulletClipSize;
-			}
-		}	
-	}
 
 	private IEnumerator StartShotDelay () {
 		yield return new WaitForSeconds(shotDelay);
 		shotDelayOver = true;
 	}
+
 
 	private IEnumerator StartReloadDelay () {
 		yield return new WaitForSeconds(reloadDelay);

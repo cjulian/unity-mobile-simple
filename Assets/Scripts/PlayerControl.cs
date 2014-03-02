@@ -27,23 +27,12 @@ public class PlayerControl : MonoBehaviour {
 	// Ground layer
 	private int groundLayer = 8;
 
-	// WEAPONS
-	public GameObject weapon;
-	private Gun gun; // gun script
-
 	// ARM
-	public GameObject arm;
-	private Arm armScript; // arm script
-	
+	public Arm armScript; // arm script
+
+
 	// Use this for initialization
 	void Start () {
-		if (weapon != null) {
-			gun = weapon.GetComponent<Gun>();
-		}
-
-		if (arm != null) {
-			armScript = arm.GetComponent<Arm>();
-		}
 	}
 
 
@@ -105,11 +94,7 @@ public class PlayerControl : MonoBehaviour {
 
 				// Not the jump button, so shoot
 				} else {
-					if (weapon != null && gun != null) {
-						gun.Shoot(t);
-
-					}
-					if (arm != null && armScript != null) {
+					if (armScript != null) {
 						armScript.aim(t);
 					}
 				}
@@ -117,7 +102,8 @@ public class PlayerControl : MonoBehaviour {
 		}
 	}
 
-	// TODO: limit raycast to only ground objects (check tag)
+
+	// Returns true if player is on the ground
 	bool GetGroundedState()	{
 		bool grounded = false;
 		Vector3 pos = this.rigidbody.collider.bounds.center;
@@ -139,7 +125,7 @@ public class PlayerControl : MonoBehaviour {
 	}
 
 
-	// Functions for setting individual components of player velocity
+	// Convenience functions for setting individual components of player velocity
 	void SetVelX(float velX) {
 		this.rigidbody.velocity = new Vector3(velX, this.rigidbody.velocity.y, this.rigidbody.velocity.z);
 	}
