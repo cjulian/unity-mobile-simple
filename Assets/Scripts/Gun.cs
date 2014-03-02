@@ -4,7 +4,6 @@ using System.Collections;
 public class Gun : MonoBehaviour {
 
 	public GUIText clipGUI;
-	public Camera mainCamera;
 	public GameObject arm;
 	public GameObject bulletPrefab;
 	public float bulletSpeed = 20.0f;
