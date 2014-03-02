@@ -5,6 +5,7 @@ public class Gun : MonoBehaviour {
 
 	public GUIText clipGUI;
 	public Camera mainCamera;
+	public GameObject arm;
 	public GameObject bulletPrefab;
 	public float bulletSpeed = 20.0f;
 	private GameObject[] bullets;
@@ -49,13 +50,15 @@ public class Gun : MonoBehaviour {
 	public void Shoot(SimpleTouch t) {
 		if (mainCamera != null && t.touchPhase == TouchPhase.Began || t.touchPhase == TouchPhase.Moved || t.touchPhase == TouchPhase.Stationary) {
 			targetPoint = mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, (mainCamera.transform.position.z * -1.0f) + this.transform.position.z));
-			targetRotation = Quaternion.LookRotation(targetPoint - this.transform.position, Vector3.back);
+			targetRotation = Quaternion.LookRotation(targetPoint - arm.transform.position, Vector3.back);
+			arm.transform.rotation = targetRotation;
+
 
 			if (shotDelayOver && reloadDelayOver) {
 				bullets[bulletCacheIndex].SetActive(true);
 				bullets[bulletCacheIndex].transform.position = this.transform.position;
 				bullets[bulletCacheIndex].transform.rotation = targetRotation;
-				bullets[bulletCacheIndex].rigidbody.velocity = new Vector3(targetPoint.x - this.transform.position.x, targetPoint.y - this.transform.position.y, 0).normalized * bulletSpeed;
+				bullets[bulletCacheIndex].rigidbody.velocity = new Vector3(targetPoint.x - arm.transform.position.x, targetPoint.y - arm.transform.position.y, 0).normalized * bulletSpeed;
 				bulletCacheIndex = (bulletCacheIndex + 1) % bulletCacheSize;
 				shotDelayOver = false;
 				StartCoroutine(StartShotDelay());
