@@ -18,7 +18,7 @@ public class Arm : MonoBehaviour {
 			this.transform.rotation = targetRotation;
 
 			if (weaponScript != null) {
-				weaponScript.Shoot(targetPoint, targetRotation);
+				weaponScript.Shoot(targetPoint, targetRotation, this.transform.position);
 			}
 		}	
 	}

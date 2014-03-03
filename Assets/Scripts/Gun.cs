@@ -4,9 +4,9 @@ using System.Collections;
 public class Gun : MonoBehaviour {
 
 	public GUIText clipGUI;
-	public GameObject arm;
 	public GameObject bulletPrefab;
 	public float bulletSpeed = 20.0f;
+	public int bulletDamage = 0;
 	private GameObject[] bullets;
 
 	public int bulletCacheSize = 10;
@@ -28,6 +28,7 @@ public class Gun : MonoBehaviour {
 
 		for (int i = 0; i < bulletCacheSize; i++) {
 			bullets[i] = GameObject.Instantiate(bulletPrefab) as GameObject;
+			bullets[i].GetComponent<Bullet>().damage = bulletDamage;
 		}
 	}
 
@@ -40,12 +41,12 @@ public class Gun : MonoBehaviour {
 
 	// Shoot the gun's bullets at the targetPoint, rotating the bullets into the proper orientation.
 	// Manages firing rate and reload time and also tracks number of bullets remaining in clip.
-	public void Shoot(Vector3 targetPoint, Quaternion targetRotation) {
+	public void Shoot(Vector3 targetPoint, Quaternion targetRotation, Vector3 armPosition) {
 		if (shotDelayOver && reloadDelayOver) {
 			bullets[bulletCacheIndex].SetActive(true);
 			bullets[bulletCacheIndex].transform.position = this.transform.position;
 			bullets[bulletCacheIndex].transform.rotation = targetRotation;
-			bullets[bulletCacheIndex].rigidbody.velocity = new Vector3(targetPoint.x - arm.transform.position.x, targetPoint.y - arm.transform.position.y, 0).normalized * bulletSpeed;
+			bullets[bulletCacheIndex].rigidbody.velocity = new Vector3(targetPoint.x - armPosition.x, targetPoint.y - armPosition.y, 0).normalized * bulletSpeed;
 			bulletCacheIndex = (bulletCacheIndex + 1) % bulletCacheSize;
 			shotDelayOver = false;
 			StartCoroutine(StartShotDelay());
