@@ -22,7 +22,6 @@ public class Enemy : MonoBehaviour {
 	public void Hit(int damage, Vector3 point, Vector3 normal) {
 		if (ps != null) {
 			ps.transform.position = point;
-
 			ps.transform.rotation = Quaternion.LookRotation(normal);
 			ps.Emit(3);
 		}
