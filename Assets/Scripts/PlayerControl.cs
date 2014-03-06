@@ -3,6 +3,7 @@ using System.Collections;
 
 public class PlayerControl : MonoBehaviour {
 
+	public Animator anim;
 	public GameManager gameManager;
 
 	// Jump Button
@@ -31,6 +32,8 @@ public class PlayerControl : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		grounded = GetGroundedState();
+		anim.SetBool("Grounded", grounded);
+
 		if (grounded) {
 			numAirJumps = 0;
 		}

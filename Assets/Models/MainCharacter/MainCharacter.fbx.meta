@@ -3,33 +3,35 @@ guid: 3d7409f32b0f709479e8f27768b617c8
 ModelImporter:
   serializedVersion: 16
   fileIDToRecycleName:
-    100000: //RootNode
-    100002: pCylinder1
-    100004: pCylinder2
-    100006: pCylinder3
-    100008: polySurface1
-    100010: pSphere1
-    400000: //RootNode
-    400002: pCylinder1
-    400004: pCylinder2
-    400006: pCylinder3
-    400008: polySurface1
-    400010: pSphere1
-    2300000: pCylinder1
-    2300002: pCylinder2
-    2300004: pCylinder3
-    2300006: polySurface1
-    2300008: pSphere1
-    3300000: pCylinder1
-    3300002: pCylinder2
-    3300004: pCylinder3
-    3300006: polySurface1
-    3300008: pSphere1
-    4300000: pSphere1
-    4300002: pCylinder1
-    4300004: pCylinder2
-    4300006: pCylinder3
-    4300008: polySurface1
+    100000: Arm
+    100002: Body
+    100004: Head
+    100006: Left_Foot
+    100008: //RootNode
+    100010: Right_Foot
+    400000: Arm
+    400002: Body
+    400004: Head
+    400006: Left_Foot
+    400008: //RootNode
+    400010: Right_Foot
+    2300000: Arm
+    2300002: Body
+    2300004: Head
+    2300006: Left_Foot
+    2300008: Right_Foot
+    3300000: Arm
+    3300002: Body
+    3300004: Head
+    3300006: Left_Foot
+    3300008: Right_Foot
+    4300000: Body
+    4300002: Head
+    4300004: Left_Foot
+    4300006: Right_Foot
+    4300008: Arm
+    7400000: Walk
+    7400002: Jump
     9500000: //RootNode
   materials:
     importMaterials: 1
@@ -45,7 +47,83 @@ ModelImporter:
     animationScaleError: .5
     animationWrapMode: 0
     extraExposedTransformPaths: []
-    clipAnimations: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Walk
+      takeName: Take 001
+      firstFrame: 25
+      lastFrame: 72
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Arm
+        weight: 1
+      - path: Body
+        weight: 1
+      - path: Head
+        weight: 1
+      - path: Left_Foot
+        weight: 1
+      - path: Right_Foot
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    - serializedVersion: 16
+      name: Jump
+      takeName: Take 001
+      firstFrame: 74
+      lastFrame: 74.0999985
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Arm
+        weight: 1
+      - path: Body
+        weight: 1
+      - path: Head
+        weight: 1
+      - path: Left_Foot
+        weight: 1
+      - path: Right_Foot
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
     isReadable: 1
   meshes:
     lODScreenPercentages: []
@@ -56,7 +134,7 @@ ModelImporter:
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 0
+    optimizeMeshForGPU: 1
     weldVertices: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
