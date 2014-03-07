@@ -15,6 +15,9 @@ public class PlayerControl : MonoBehaviour {
 	// check for grounded
 	private bool grounded = false;
 
+	// walking speed
+	public float velX = 5f;
+
 	// JUMP related vars
 	public float jumpVel = 20;
 	public bool canGlide = false;
@@ -23,14 +26,21 @@ public class PlayerControl : MonoBehaviour {
 	private int numAirJumps = 0;
 
 	// Ground layer
-	private int groundLayer = 8;
+	private int groundLayer;
 
 	// ARM
 	public Arm armScript; // arm script
 
 
+	void Awake() {
+		groundLayer = LayerMask.NameToLayer("Ground");
+	}
+
 	// Update is called once per frame
 	void Update () {
+		this.SetVelX(velX);
+//		this.rigidbody.AddForce(Vector3.right * velX/10, ForceMode.VelocityChange);
+
 		grounded = GetGroundedState();
 		anim.SetBool("Grounded", grounded);
 
@@ -39,7 +49,6 @@ public class PlayerControl : MonoBehaviour {
 		}
 
 		touch = gameManager.GetTouchInput();
-
 		if (touch != null) {
 			bool jumped = false;
 

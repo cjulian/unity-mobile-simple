@@ -26,7 +26,9 @@ public class Bullet : MonoBehaviour {
 
 	void OnCollisionEnter(Collision collision) {
 //		Debug.DrawRay(collision.contacts[0].point, collision.contacts[0].normal * 2.0f, Color.white, 0.24f);
-		collision.gameObject.GetComponent<Enemy>().Hit(damage, collision.contacts[0].point, collision.contacts[0].normal);
+		if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy")) {
+			collision.gameObject.GetComponent<Enemy>().Hit(damage, collision.contacts[0].point, collision.contacts[0].normal);
+		}
 		this.gameObject.SetActive(false);
 	}
 }

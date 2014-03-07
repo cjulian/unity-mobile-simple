@@ -1,25 +1,45 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
 	public Camera mainCamera;
-	public GUIText debugLabel; 
+	public float cameraOrthWidth = 0;
 
+	public GUIText debugLabel; 
 	private SimpleTouch[] touch;
 
 
-	// Update is called once per frame
-	void Update () {
-		touch = _GetTouchInput();
-	}
-
-
+	/***********************/
+	//  PUBLIC METHODS
+	/***********************/
 	public SimpleTouch[] GetTouchInput() {
 		return touch;
 	}
 
+	public float getCameraOrthWidth() {
+		cameraOrthWidth = mainCamera.orthographicSize * mainCamera.aspect;
+		return cameraOrthWidth;
+	}
 
+
+	/***********************/
+	//  PRIVATE EVENT METHODS
+	/***********************/
+	void Awake() {
+		getCameraOrthWidth();
+	}
+
+	// Update is called once per frame
+	void Update() {
+		touch = _GetTouchInput();	
+	}
+
+
+	/***********************/
+	//  PRIVATE METHODS
+	/***********************/
 	// Return touch input if touchscreen or convert mouse input to touch input
 	private SimpleTouch[] _GetTouchInput()
 	{
@@ -38,9 +58,7 @@ public class GameManager : MonoBehaviour {
 					touchPhase = t.phase
 				};
 			}
-			
-			
-			// If no touch input check for mouse input
+		// If no touch input check for mouse input
 		} else {
 			bool touched = false;
 			TouchPhase phase = TouchPhase.Canceled;
