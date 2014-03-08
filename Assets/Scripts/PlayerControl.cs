@@ -6,16 +6,13 @@ public class PlayerControl : MonoBehaviour {
 	public Animator anim;
 	public GameManager gameManager;
 
-	// Jump Button
+	// Jump Button Texture
 	public GUITexture jumpButton;
 
-	// store input
 	private SimpleTouch[] touch;
-
-	// check for grounded
 	private bool grounded = false;
 
-	// walking speed
+	// left-to-right movement speed
 	public float velX = 5f;
 
 	// JUMP related vars
@@ -25,18 +22,15 @@ public class PlayerControl : MonoBehaviour {
 	public int maxAirJumps = 1;
 	private int numAirJumps = 0;
 
-	// Ground layer
 	private int groundLayer;
-
-	// ARM
-	public Arm armScript; // arm script
+	public Arm armScript;
 
 
 	void Awake() {
 		groundLayer = LayerMask.NameToLayer("Ground");
 	}
 
-	// Update is called once per frame
+
 	void Update () {
 		this.SetVelX(velX);
 //		this.rigidbody.AddForce(Vector3.right * velX/10, ForceMode.VelocityChange);
@@ -51,6 +45,7 @@ public class PlayerControl : MonoBehaviour {
 		touch = gameManager.GetTouchInput();
 		if (touch != null) {
 			bool jumped = false;
+			bool aimed = false;
 
 			foreach (SimpleTouch t in touch) {
 
@@ -61,8 +56,9 @@ public class PlayerControl : MonoBehaviour {
 						jumped = true;
 					}
 				} else {
-					if (armScript != null) {
+					if (!aimed && armScript != null) {
 						armScript.aim(t);
+						aimed = true;
 					}
 				}
 			}
@@ -94,7 +90,7 @@ public class PlayerControl : MonoBehaviour {
 				
 			case TouchPhase.Ended:
 				if (this.rigidbody.velocity.y > 0) {
-					SetVelY(this.rigidbody.velocity.y * 0.2f);
+					SetVelY(this.rigidbody.velocity.y * 0.4f);
 				}
 				break;
 				
@@ -121,6 +117,7 @@ public class PlayerControl : MonoBehaviour {
 		    Physics.Raycast(new Vector3(rightX, pos.y, pos.z), -Vector3.up, out hit, height/2, 1 << groundLayer))
 		{
 			grounded = true;
+			Debug.Log (hit.normal);
 		}
 
 		return grounded;

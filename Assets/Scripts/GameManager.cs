@@ -14,10 +14,12 @@ public class GameManager : MonoBehaviour {
 	/***********************/
 	//  PUBLIC METHODS
 	/***********************/
+	// returns all touch inputs recorded this frame
 	public SimpleTouch[] GetTouchInput() {
 		return touch;
 	}
 
+	// returns the orthographic width of the camera
 	public float getCameraOrthWidth() {
 		cameraOrthWidth = mainCamera.orthographicSize * mainCamera.aspect;
 		return cameraOrthWidth;
@@ -31,7 +33,6 @@ public class GameManager : MonoBehaviour {
 		getCameraOrthWidth();
 	}
 
-	// Update is called once per frame
 	void Update() {
 		touch = _GetTouchInput();	
 	}

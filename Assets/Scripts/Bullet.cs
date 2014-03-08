@@ -7,7 +7,6 @@ public class Bullet : MonoBehaviour {
 	public int damage = 0;
 
 
-	// Use this for initialization
 	void Start () {
 		if (bulletRenderer == null) {
 			Renderer thisRenderer = bulletRenderer = this.GetComponent<MeshRenderer>();
@@ -17,15 +16,19 @@ public class Bullet : MonoBehaviour {
 		}
 	}
 	
-	// Update is called once per frame
+
 	void Update () {
+		// deactivate bullet if it's not visible
 		if (!bulletRenderer.isVisible) {
 			this.gameObject.SetActive(false);
 		}
+
+		// re-orient bullet to point in direction of travel (eg. arrow orientation)
+		this.transform.rotation = Quaternion.LookRotation(this.rigidbody.velocity, Vector3.back);
 	}
 
+
 	void OnCollisionEnter(Collision collision) {
-//		Debug.DrawRay(collision.contacts[0].point, collision.contacts[0].normal * 2.0f, Color.white, 0.24f);
 		if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy")) {
 			collision.gameObject.GetComponent<Enemy>().Hit(damage, collision.contacts[0].point, collision.contacts[0].normal);
 		}
