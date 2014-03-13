@@ -29,7 +29,7 @@ public class Bullet : MonoBehaviour {
 
 
 	void OnCollisionEnter(Collision collision) {
-		if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy")) {
+		if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy") || collision.gameObject.layer == LayerMask.NameToLayer("EnemyPlatform")) {
 			collision.gameObject.GetComponent<Enemy>().Hit(damage, collision.contacts[0].point, collision.contacts[0].normal);
 		}
 		this.gameObject.SetActive(false);
