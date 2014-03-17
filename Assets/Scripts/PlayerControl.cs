@@ -26,15 +26,8 @@ public class PlayerControl : MonoBehaviour {
 	public Arm armScript;
 
 
-//	void Awake() {
-//		groundedLayerMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("EnemyPlatform");
-//	}
-
-
 	void Update () {
 		this.SetVelX(velX);
-		
-//		grounded = GetGroundedState();
 		anim.SetBool("Grounded", grounded);
 
 		if (grounded) {
@@ -100,28 +93,6 @@ public class PlayerControl : MonoBehaviour {
 	}
 
 
-	// Returns true if player is on the ground
-//	bool GetGroundedState()	{
-//		bool grounded = false;
-//		Vector3 pos = this.rigidbody.collider.bounds.center;
-//		float height = this.rigidbody.collider.bounds.size.y;
-//		float leftX = pos.x - this.rigidbody.collider.bounds.size.x / 2;
-//		float rightX = pos.x + this.rigidbody.collider.bounds.size.x / 2;
-//
-//		RaycastHit hit;	
-//
-//		// test left, right and center of collider
-//		if (Physics.Raycast(new Vector3(leftX, pos.y, pos.z), -Vector3.up, out hit, 0.1f + height/2, groundedLayerMask) ||
-//		    Physics.Raycast(new Vector3(pos.x, pos.y, pos.z), -Vector3.up, out hit, 0.1f + height/2, groundedLayerMask) ||
-//		    Physics.Raycast(new Vector3(rightX, pos.y, pos.z), -Vector3.up, out hit, 0.1f + height/2, groundedLayerMask))
-//		{
-//			grounded = true;
-//		}
-//
-//		return grounded;
-//	}
-
-
 	void OnCollisionStay(Collision c) {
 		GroundCollisionCheck(c);
 	}
@@ -132,6 +103,8 @@ public class PlayerControl : MonoBehaviour {
 		grounded = false;
 	}
 
+
+	// Check if the player is grounded
 	void GroundCollisionCheck(Collision c) {
 		float playerColliderBottomY = this.collider.bounds.center.y - this.collider.bounds.size.y / 2;
 

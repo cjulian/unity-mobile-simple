@@ -3,9 +3,13 @@ using System.Collections;
 
 public class Bullet : MonoBehaviour {
 
-	public Renderer bulletRenderer;
-	public int damage = 0;
+	private Renderer bulletRenderer;
+	private int damage = 0;
 
+
+	public void SetDamage(int d) {
+		damage = d;
+	}
 
 	void Start () {
 		if (bulletRenderer == null) {
@@ -15,7 +19,7 @@ public class Bullet : MonoBehaviour {
 			bulletRenderer = thisRenderer != null ? thisRenderer : childRenderer;
 		}
 	}
-	
+
 
 	void Update () {
 		// deactivate bullet if it's not visible
@@ -29,9 +33,17 @@ public class Bullet : MonoBehaviour {
 
 
 	void OnCollisionEnter(Collision collision) {
-		if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy") || collision.gameObject.layer == LayerMask.NameToLayer("EnemyPlatform")) {
-			collision.gameObject.GetComponent<Enemy>().Hit(damage, collision.contacts[0].point, collision.contacts[0].normal);
+		if (collision.gameObject.layer == LayerMask.NameToLayer("Destructible") ||
+		    collision.gameObject.layer == LayerMask.NameToLayer("Enemy") ||
+		    collision.gameObject.layer == LayerMask.NameToLayer("EnemyPlatform"))
+		{
+			Destructible d = collision.gameObject.GetComponent<Destructible>();
+			if (d != null) {
+				d.Hit(damage, collision.contacts[0].point, collision.contacts[0].normal);
+			}
 		}
+
+		// make this bullet disappear
 		this.gameObject.SetActive(false);
 	}
 }

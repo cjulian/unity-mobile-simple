@@ -5,9 +5,10 @@ using System.Collections.Generic;
 public class GameManager : MonoBehaviour {
 
 	public Camera mainCamera;
-	public float cameraOrthWidth = 0;
+	private float cameraOrthWidth = 0;
 
 	public GUIText debugLabel; 
+	public ParticleSystem mainParticleSystem;
 	private SimpleTouch[] touch;
 
 
@@ -27,7 +28,7 @@ public class GameManager : MonoBehaviour {
 
 
 	/***********************/
-	//  PRIVATE EVENT METHODS
+	//  STANDARD EVENT HANDLERS
 	/***********************/
 	void Awake() {
 		getCameraOrthWidth();

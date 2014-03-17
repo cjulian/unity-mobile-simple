@@ -28,7 +28,7 @@ public class Gun : MonoBehaviour {
 
 		for (int i = 0; i < bulletCacheSize; i++) {
 			bullets[i] = GameObject.Instantiate(bulletPrefab) as GameObject;
-			bullets[i].GetComponent<Bullet>().damage = bulletDamage;
+			bullets[i].GetComponent<Bullet>().SetDamage(bulletDamage);
 		}
 	}
 

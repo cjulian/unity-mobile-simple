@@ -19,7 +19,8 @@ public class DynamicObjectManager : MonoBehaviour {
 			g = GameObject.Find("_GameManager").GetComponentInChildren<GameManager>();
 		}
 
-		// Create a list of all dynamic objects
+		// Create a list of all dynamic objects.
+		// NOTE: FindGameObjectsWithTag() only works for currently active objects.
 		dynamicObjectsA = GameObject.FindGameObjectsWithTag("Dynamic");
 		dynamicObjects = new List<GameObject>(dynamicObjectsA);
 
@@ -63,6 +64,6 @@ public class DynamicObjectManager : MonoBehaviour {
 			} else if (!dynamicObjects[i].activeInHierarchy && objPositionRelativeToCam < camRightThreshold) {
 				dynamicObjects[i].SetActive(true);
 			}
-		}
+		}	
 	}
 }
