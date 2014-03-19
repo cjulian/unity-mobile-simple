@@ -11,9 +11,10 @@ public class PlayerControl : MonoBehaviour {
 
 	private SimpleTouch[] touch;
 	private bool grounded = true;
+	private bool blocked = false;
 
 	// left-to-right movement speed
-	public float velX = 5f;
+	public float walkSpeed = 5f;
 
 	// JUMP related vars
 	public float jumpVel = 20;
@@ -22,12 +23,35 @@ public class PlayerControl : MonoBehaviour {
 	public int maxAirJumps = 1;
 	private int numAirJumps = 0;
 
+	private float velX = 0;
+	private float velY = 0;
+
+
 	private int groundedLayerMask;
 	public Arm armScript;
 
 
+	void Start() {
+		int platformLayerMask = 1 << LayerMask.NameToLayer("Platform");
+		int enemyPlatformLayerMask = 1 << LayerMask.NameToLayer("EnemyPlatform");
+		int destructibleLayerMask = 1 << LayerMask.NameToLayer("Destructible");
+		groundedLayerMask = platformLayerMask | enemyPlatformLayerMask | destructibleLayerMask;
+	}
+
+
 	void Update () {
-		this.SetVelX(velX);
+		blocked = GetBlockedState();
+		if (!blocked) {
+			velX = walkSpeed;
+		} else {
+			velX = 0;
+		}
+
+		velY = this.rigidbody.velocity.y;
+
+		this.rigidbody.AddForce(Vector3.right * walkSpeed, ForceMode.Impulse);
+
+		grounded = GetGroundedState();
 		anim.SetBool("Grounded", grounded);
 
 		if (grounded) {
@@ -55,6 +79,8 @@ public class PlayerControl : MonoBehaviour {
 				}
 			}
 		}	
+
+		this.rigidbody.velocity = new Vector3(velX, velY, 0);
 	}
 
 
@@ -63,7 +89,7 @@ public class PlayerControl : MonoBehaviour {
 		switch (t.touchPhase){
 			case TouchPhase.Began:
 				if (grounded || numAirJumps < maxAirJumps) {
-					SetVelY(jumpVel);
+					velY = jumpVel;
 					
 					if (!grounded) {
 						numAirJumps++;
@@ -75,14 +101,14 @@ public class PlayerControl : MonoBehaviour {
 			case TouchPhase.Stationary:
 			case TouchPhase.Moved:
 				if (canGlide && this.rigidbody.velocity.y <= glideVel) {
-					SetVelY(glideVel);
+					velY = glideVel;
 				}
 				break;
 				
 				
 			case TouchPhase.Ended:
 				if (this.rigidbody.velocity.y > 0) {
-					SetVelY(this.rigidbody.velocity.y * 0.4f);
+					velY = this.rigidbody.velocity.y * 0.4f;
 				}
 				break;
 				
@@ -93,34 +119,52 @@ public class PlayerControl : MonoBehaviour {
 	}
 
 
-	void OnCollisionStay(Collision c) {
-		GroundCollisionCheck(c);
-	}
-	void OnCollisionEnter(Collision c) {
-		GroundCollisionCheck(c);
-	}
-	void OnCollisionExit() {
-		grounded = false;
-	}
+	// cast a capsule below the player's feet a very short distance and return true if it hits anything.
+	bool GetGroundedState() {
+//		float colliderBottomY = this.collider.bounds.center.y - this.collider.bounds.size.y / 2;
 
+		Vector3 colliderRight = this.collider.bounds.center;
+		colliderRight.x += collider.bounds.size.x / 2f - 0.2f;
+		colliderRight.y += collider.bounds.size.y / -2f + 0.2f;
 
-	// Check if the player is grounded
-	void GroundCollisionCheck(Collision c) {
-		float playerColliderBottomY = this.collider.bounds.center.y - this.collider.bounds.size.y / 2;
+		Vector3 colliderLeft = this.collider.bounds.center;
+		colliderLeft.x += collider.bounds.size.x / -2;
+		colliderLeft.y += collider.bounds.size.y / -2f + 0.2f;
 
-		foreach(ContactPoint cp in c.contacts) {
+//		Debug.DrawLine(colliderLeft + new Vector3(0, 0, -10f), colliderRight + new Vector3(0, 0, -10f) , Color.red);
 
-			// If the collision point is less than 0.1 world units above the bottom of the player collider...
-			// i.e. if the collision point is on the bottom of the collider
-			if (cp.point.y - playerColliderBottomY < 0.1f) {
-
-				// If that bottom collision point is relatively flat...
-				if (cp.normal.normalized.y > 0.6f) {
-					grounded = true;
-					break;
-				}
+		RaycastHit hit;
+		if (Physics.CapsuleCast(colliderRight, colliderLeft, 0.1f, Vector3.down, out hit, 0.21f, groundedLayerMask)) {
+			if (hit.normal.normalized.y > 0.9) {
+				return true;
 			}
 		}
+
+		return false;
+	}
+
+
+	// cast a capsule to the player's right a very short distance and return true if it hits anything.
+	bool GetBlockedState() {
+//		float colliderRightX = this.collider.bounds.center.x + this.collider.bounds.size.x / 2;
+
+		Vector3 colliderTop = this.collider.bounds.center;
+		colliderTop.x += collider.bounds.size.x / 2 - 0.3f;
+		colliderTop.y += collider.bounds.size.y / 2;
+
+		Vector3 colliderBottom = this.collider.bounds.center;
+		colliderBottom.x += collider.bounds.size.x / 2 - 0.3f;
+		colliderBottom.y += -1 * collider.bounds.size.y / 2 + 0.15f;
+
+//		Debug.DrawLine(colliderBottom + new Vector3(0,0,-10f), colliderTop + new Vector3(0,0,-10f), Color.red);
+
+		RaycastHit hit;
+		if (Physics.CapsuleCast(colliderBottom, colliderTop, 0.1f, Vector3.right, out hit, 0.31f, groundedLayerMask)) {
+			return true;
+		}
+
+//		Debug.Log ("not blocked");
+		return false;
 	}
 
 
