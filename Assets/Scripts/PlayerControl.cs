@@ -3,88 +3,83 @@ using System.Collections;
 
 public class PlayerControl : MonoBehaviour {
 
-	public Animator anim;
+	// External objects
 	public GameManager gameManager;
-
-	// Jump Button Texture
+	public Animator anim;
 	public GUITexture jumpButton;
+	private PlayerStatus playerStatus;
+	private Arm armScript;
 
 	private SimpleTouch[] touch;
-	private bool grounded = true;
-	private bool blocked = false;
-
-	// left-to-right movement speed
 	public float walkSpeed = 5f;
-
-	// JUMP related vars
 	public float jumpVel = 20;
 	public bool canGlide = false;
 	public float glideVel = -1;
 	public int maxAirJumps = 1;
 	private int numAirJumps = 0;
-
 	private float velX = 0;
 	private float velY = 0;
-
-
-	private int groundedLayerMask;
-	public Arm armScript;
+	private bool grounded = false;
+	public float knockBackDelay = 1f;
+	public float recoveryDelay = 1.1f;
+	public float invincibleDelay = 1.5f;
+	bool invincible = false;
+	HitState hitState = HitState.normal;
 
 
 	void Start() {
-		int platformLayerMask = 1 << LayerMask.NameToLayer("Platform");
-		int enemyPlatformLayerMask = 1 << LayerMask.NameToLayer("EnemyPlatform");
-		int destructibleLayerMask = 1 << LayerMask.NameToLayer("Destructible");
-		groundedLayerMask = platformLayerMask | enemyPlatformLayerMask | destructibleLayerMask;
+		playerStatus = this.GetComponent<PlayerStatus>();
+		armScript = this.GetComponentInChildren<Arm>();
 	}
 
 
 	void Update () {
-		blocked = GetBlockedState();
-		if (!blocked) {
-			velX = walkSpeed;
-		} else {
-			velX = 0;
-		}
-
-		velY = this.rigidbody.velocity.y;
-
-		this.rigidbody.AddForce(Vector3.right * walkSpeed, ForceMode.Impulse);
-
-		grounded = GetGroundedState();
+		grounded = playerStatus.GetGroundedState();
 		anim.SetBool("Grounded", grounded);
 
 		if (grounded) {
 			numAirJumps = 0;
 		}
 
+		// default velocity
+		velX = playerStatus.GetBlockedState() == true ? 0 : walkSpeed;
+		velY = this.rigidbody.velocity.y;
+
+		// velocity can be overridden by player input or if player is hit
+		ManageInput();
+		ManageHitState();
+
+		this.rigidbody.velocity = new Vector3(velX, velY, 0);
+	}
+
+
+	// Detect input and jump or shoot accordingly.
+	void ManageInput() 
+	{
 		touch = gameManager.GetTouchInput();
 		if (touch != null) {
 			bool jumped = false;
 			bool aimed = false;
-
+			
 			foreach (SimpleTouch t in touch) {
-
-				// If touch was on jump button, jump.  Otherwise, shoot.
 				if (jumpButton != null && jumpButton.HitTest(t.position)) {
 					if (!jumped) {
 						Jump(t);
 						jumped = true;
 					}
 				} else {
-					if (!aimed && armScript != null) {
+					if (!aimed && armScript != null && hitState != HitState.knockback) {
 						armScript.aim(t);
 						aimed = true;
 					}
 				}
 			}
 		}	
-
-		this.rigidbody.velocity = new Vector3(velX, velY, 0);
 	}
 
 
-	// Jump logic.  Decide if player should jump, double jump or glide.
+	// Decide if player should jump, double jump or glide and
+	// then set Y velocity accordingly
 	void Jump(SimpleTouch t) {
 		switch (t.touchPhase){
 			case TouchPhase.Began:
@@ -97,7 +92,6 @@ public class PlayerControl : MonoBehaviour {
 				}
 				break;
 				
-				
 			case TouchPhase.Stationary:
 			case TouchPhase.Moved:
 				if (canGlide && this.rigidbody.velocity.y <= glideVel) {
@@ -105,13 +99,11 @@ public class PlayerControl : MonoBehaviour {
 				}
 				break;
 				
-				
 			case TouchPhase.Ended:
 				if (this.rigidbody.velocity.y > 0) {
 					velY = this.rigidbody.velocity.y * 0.4f;
 				}
 				break;
-				
 				
 			default:				
 				break;
@@ -119,63 +111,79 @@ public class PlayerControl : MonoBehaviour {
 	}
 
 
-	// cast a capsule below the player's feet a very short distance and return true if it hits anything.
-	bool GetGroundedState() {
-//		float colliderBottomY = this.collider.bounds.center.y - this.collider.bounds.size.y / 2;
+	void OnTriggerEnter(Collider c) {
+		if (!invincible) {
+			hitState = HitState.hit;
+		}
+	}
 
-		Vector3 colliderRight = this.collider.bounds.center;
-		colliderRight.x += collider.bounds.size.x / 2f - 0.2f;
-		colliderRight.y += collider.bounds.size.y / -2f + 0.2f;
 
-		Vector3 colliderLeft = this.collider.bounds.center;
-		colliderLeft.x += collider.bounds.size.x / -2;
-		colliderLeft.y += collider.bounds.size.y / -2f + 0.2f;
+	void ManageHitState() {
+		switch(hitState) {
 
-//		Debug.DrawLine(colliderLeft + new Vector3(0, 0, -10f), colliderRight + new Vector3(0, 0, -10f) , Color.red);
+		// Start knockback.
+		// Player invincibility starts.
+		case HitState.hit:
+			velX = -8f;
+			velY = 10f;
+			invincible = true;
+			hitState = HitState.knockback;
+			StartCoroutine(KnockBackFromHit());
+			StartCoroutine(RecoverFromHit());
+			StartCoroutine(InvincibilityTimer());
+			this.collider.material.dynamicFriction = 1.0f;
+			break;
+		
+		// Continue moving back, even if grounded
+		case HitState.knockback:
+			velX = this.rigidbody.velocity.x;
+			velY = this.rigidbody.velocity.y;
+			break;
 
-		RaycastHit hit;
-		if (Physics.CapsuleCast(colliderRight, colliderLeft, 0.1f, Vector3.down, out hit, 0.21f, groundedLayerMask)) {
-			if (hit.normal.normalized.y > 0.9) {
-				return true;
+		// Continue moving back until grounded.
+		// Once grounded, do not move forward until recovered.
+		case HitState.recovering:
+			velX = grounded ? 0 : velX = this.rigidbody.velocity.x;
+			velY = grounded ? 0 : this.rigidbody.velocity.y;
+			break;
+
+		// Once grounded return player to normal state.
+		case HitState.recovered:
+			this.collider.material.dynamicFriction = 0;
+			if (grounded) {
+				hitState = HitState.normal;
 			}
+			break;
+
+		case HitState.normal:
+		default:
+			break;
 		}
-
-		return false;
 	}
 
 
-	// cast a capsule to the player's right a very short distance and return true if it hits anything.
-	bool GetBlockedState() {
-//		float colliderRightX = this.collider.bounds.center.x + this.collider.bounds.size.x / 2;
-
-		Vector3 colliderTop = this.collider.bounds.center;
-		colliderTop.x += collider.bounds.size.x / 2 - 0.3f;
-		colliderTop.y += collider.bounds.size.y / 2;
-
-		Vector3 colliderBottom = this.collider.bounds.center;
-		colliderBottom.x += collider.bounds.size.x / 2 - 0.3f;
-		colliderBottom.y += -1 * collider.bounds.size.y / 2 + 0.15f;
-
-//		Debug.DrawLine(colliderBottom + new Vector3(0,0,-10f), colliderTop + new Vector3(0,0,-10f), Color.red);
-
-		RaycastHit hit;
-		if (Physics.CapsuleCast(colliderBottom, colliderTop, 0.1f, Vector3.right, out hit, 0.31f, groundedLayerMask)) {
-			return true;
-		}
-
-//		Debug.Log ("not blocked");
-		return false;
+	private IEnumerator KnockBackFromHit () {
+		yield return new WaitForSeconds(knockBackDelay);
+		hitState = HitState.recovering;
 	}
 
 
-	// Convenience functions for setting individual components of player velocity
-	void SetVelX(float velX) {
-		this.rigidbody.velocity = new Vector3(velX, this.rigidbody.velocity.y, this.rigidbody.velocity.z);
+	private IEnumerator RecoverFromHit () {
+		yield return new WaitForSeconds(recoveryDelay);
+		hitState = HitState.recovered;
 	}
-	void SetVelY(float velY) {
-		this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, velY, this.rigidbody.velocity.z);
+
+
+	private IEnumerator InvincibilityTimer () {
+		yield return new WaitForSeconds(invincibleDelay);
+		invincible = false;
 	}
-	void SetVelZ(float velZ) {
-		this.rigidbody.velocity = new Vector3(this.rigidbody.velocity.x, this.rigidbody.velocity.y, velZ);
-	}
+}
+
+public enum HitState {
+	normal,
+	hit,
+	knockback,
+	recovering,
+	recovered
 }

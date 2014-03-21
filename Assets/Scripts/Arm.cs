@@ -14,7 +14,7 @@ public class Arm : MonoBehaviour {
 	public void aim(SimpleTouch t) {
 		if (gameManager != null && (t.touchPhase == TouchPhase.Began || t.touchPhase == TouchPhase.Moved || t.touchPhase == TouchPhase.Stationary)) {
 			targetPoint = gameManager.mainCamera.ScreenToWorldPoint(new Vector3(t.position.x, t.position.y, (gameManager.mainCamera.transform.position.z * -1.0f) + this.transform.position.z));
-			targetRotation = Quaternion.LookRotation(targetPoint - this.transform.position, Vector3.back);
+			targetRotation = Quaternion.LookRotation(targetPoint - this.transform.position, Vector3.forward);
 			this.transform.rotation = targetRotation;
 
 			if (weaponScript != null) {
